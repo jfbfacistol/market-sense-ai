@@ -25,3 +25,19 @@ dist-ssr
 
 .env
 *.csv
+
+# Docker & Persistence
+n8n_data/
+ms-database/
+postgres_data/
+
+# Python Environment
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Local Data backups
+*.json
+!package.json
+!composer.json

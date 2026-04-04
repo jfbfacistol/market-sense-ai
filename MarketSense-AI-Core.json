@@ -14,7 +14,7 @@
         0,
         0
       ],
-      "id": "0940ae80-c414-496f-8ed9-6ae68f60b8ca",
+      "id": "7354edd2-3253-470f-ae29-61ce073dcb3b",
       "name": "Webhook",
       "webhookId": "51955049-79a0-429d-8952-937de61f6f73"
     },
@@ -29,12 +29,12 @@
         208,
         0
       ],
-      "id": "04072ff3-9a77-4d9a-8c13-0eab108ac7fa",
+      "id": "8fc50764-74bb-4b52-bf32-ca3c2d8da0b2",
       "name": "Read/Write Files from Disk"
     },
     {
       "parameters": {
-        "jsCode": "// 1. Get the raw data and the ZIP code from the user's request\nconst buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst rawText = buffer.toString('utf8');\nconst targetZip = $node[\"Webhook\"].json[\"body\"][\"zipCode\"].toString();\n\n// 2. Split into lines\nconst lines = rawText.split('\\n');\nconst header = lines[0];\n\n// 3. Filter for rows that contain the ZIP code\n// This is like a \"Find\" command in Excel\nconst matches = lines.filter(line => line.includes(targetZip)).slice(0, 50);\n\n// 4. Combine header + matching rows and send to Gemini\nconst finalData = [header, ...matches].join('\\n');\n\nreturn [{ json: { market_data: finalData } }];"
+        "jsCode": "const zipInput = ($node[\"Webhook\"].json[\"body\"][\"zipCode\"] || \"\").toString().trim().toLowerCase();\nconst csvData = $node[\"Read Binary Files\"].json;\n\nlet filteredData = [];\nconst MAX_RESULTS = 50; // We only need 50 rows for Gemini\n\n// EFFICIENT FILTERING: Use a loop and 'break' so we don't process 2 million rows if we don't have to\nfor (const row of csvData) {\n  const zip = (row.zip_code || \"\").toString().toLowerCase();\n  const city = (row.city || \"\").toString().toLowerCase();\n  const state = (row.state || \"\").toString().toLowerCase();\n\n  if (!zipInput || zip === zipInput || city === zipInput || state === zipInput) {\n    filteredData.push(row);\n  }\n\n  // Stop once we have enough data to send to Gemini\n  if (filteredData.length >= MAX_RESULTS) break;\n}\n\nreturn {\n  market_data: filteredData,\n  match_count: filteredData.length,\n  search_term: zipInput || \"United States (General)\"\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -42,7 +42,7 @@
         416,
         0
       ],
-      "id": "7dffc973-e355-4f92-ad77-f18e2c53d6da",
+      "id": "484ba67c-4517-4231-a031-36dd473ed519",
       "name": "Code in JavaScript"
     },
     {
@@ -56,7 +56,7 @@
         "messages": {
           "values": [
             {
-              "content": "=\"The user is asking: {{ $node[\"Webhook\"].json[\"body\"][\"question\"] }}\n\nPlease answer this question using the following market data:\n{{ $json.market_data }}\""
+              "content": "=Answer this user question: {{ $node[\"Webhook\"].json[\"body\"][\"question\"] }}\n\nCRITICAL DATA NOTICE: \nThe market data provided below IS the actual row-level data from the dataset. \nDo NOT say you don't have access to the rows. \nLook at the `prev_sold_date` column in the provided data and find the most recent one.\n\nMarket Data: {{ $json.market_data }}\n\nCRITICAL INSTRUCTION:\nRespond with ONLY a raw JSON object. \nUse the \"brief\" field to answer the question directly. \nIf the question is about a date, find the largest (most recent) value in the `prev_sold_date` field."
             }
           ]
         },
@@ -69,11 +69,11 @@
         624,
         0
       ],
-      "id": "47e52f52-9796-40c8-a0cb-3b438eec24e7",
+      "id": "61ef815f-c636-4efb-a353-a6247318bc00",
       "name": "Message a model",
       "credentials": {
         "googlePalmApi": {
-          "id": "Vo1XfzH9E5ODT362",
+          "id": "E6Ahk6YFUOZMtM6W",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -120,11 +120,11 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "d5d8eb0a-b1d5-4513-bca6-4cec9918302c",
+  "versionId": "16e413af-29ce-48ca-b7d2-3b34ea985df3",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "5095e85875c38bbdb261104b3efb3cd3947cf1d3eec482ba47f62a3d350977f4"
+    "instanceId": "67560758f34965d0065e7a844f4edfc9ab3de31e36d4f0bfe35aa221ec536164"
   },
-  "id": "6JnEGww2qSX0Amsf",
+  "id": "NdZBes2asyObHUM3",
   "tags": []
 }
