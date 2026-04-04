@@ -4,24 +4,24 @@ GenAI-Powered Real Estate Intelligence Engine
 MarketSense AI is a full-stack prototype designed to transform raw commercial real estate data into actionable strategic briefs. By bridging a React frontend with an n8n automation backend and Google Gemini 1.5 Flash, the platform allows users to query massive datasets using natural language.
 
 Core Features
-Natural Language Querying: Ask complex questions about market trends, pricing, and "vibes" without knowing SQL.
+- Natural Language Querying: Ask complex questions about market trends, pricing, and "vibes" without knowing SQL.
 
-Dynamic Market Distribution: Real-time data visualization that adapts based on AI-extracted metrics.
+- Dynamic Market Distribution: Real-time data visualization that adapts based on AI-extracted metrics.
 
-Automated Strategy Briefs: Generates professional-grade reports including key signals and investment recommendations.
+- Automated Strategy Briefs: Generates professional-grade reports including key signals and investment recommendations.
 
-Hybrid Architecture: Combines high-speed local data processing (Node.js/n8n) with advanced LLM reasoning.
+- Hybrid Architecture: Combines high-speed local data processing (Node.js/n8n) with advanced LLM reasoning.
 
 The Tech Stack
-Frontend: React 18, Vite, Tailwind CSS (Custom UI Components)
+- Frontend: React 18, Vite, Tailwind CSS (Custom UI Components)
 
-Backend Automation: n8n (Self-hosted via Docker)
+- Backend Automation: n8n (Self-hosted via Docker)
 
-AI Engine: Google Gemini 2.5 Flash
+- AI Engine: Google Gemini 2.5 Flash
 
-Data Source: 170MB+ Realtor Property Dataset (CSV)
+- Data Source: 170MB+ Realtor Property Dataset (CSV)
 
-Environment: Dockerized workflow for local scalability
+- Environment: Dockerized workflow for local scalability
 
 Installation & Setup
 1. Prerequisites
