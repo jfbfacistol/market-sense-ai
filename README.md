@@ -1,6 +1,9 @@
 # MarketSense AI
 ### GenAI-Enabled Real Estate Intelligence | Proof of Concept
 
+**Live Demo:** [market-sense-ai-chi.vercel.app](https://market-sense-ai-chi.vercel.app/)
+_The hosted demo operates on a curated mock dataset covering New Jersey (Jersey City, Princeton, and Newark). Full RAG pipeline functionality is available via local deployment. See [Installation & Deployment](#8-installation--deployment)._
+
 ---
 
 ## Executive Summary
@@ -20,14 +23,15 @@ The architecture was designed around three enterprise-grade constraints: **retri
 ## Table of Contents
 
 1. [The Business Problem](#1-the-business-problem)
-2. [Solution Overview](#2-solution-overview)
-3. [System Architecture](#3-system-architecture)
-4. [Strategic Engineering Decisions](#4-strategic-engineering-decisions)
-5. [Platform Capabilities](#5-platform-capabilities)
-6. [Product Roadmap](#6-product-roadmap)
-7. [Technology Stack](#7-technology-stack)
-8. [Installation & Deployment](#8-installation--deployment)
-9. [Data Source & Governance Notice](#9-data-source--governance-notice)
+2. [Live Demo](#2-live-demo)
+3. [Solution Overview](#3-solution-overview)
+4. [System Architecture](#4-system-architecture)
+5. [Strategic Engineering Decisions](#5-strategic-engineering-decisions)
+6. [Platform Capabilities](#6-platform-capabilities)
+7. [Product Roadmap](#7-product-roadmap)
+8. [Technology Stack](#8-technology-stack)
+9. [Installation & Deployment](#9-installation--deployment)
+10. [Data Source & Governance Notice](#10-data-source--governance-notice)
 
 ---
 
@@ -45,7 +49,41 @@ MarketSense AI was designed to close each of these gaps through a layered archit
 
 ---
 
-## 2. Solution Overview
+## 2. Live Demo
+
+A hosted demonstration is available at **[market-sense-ai-chi.vercel.app](https://market-sense-ai-chi.vercel.app/)**.
+
+### Demo Scope & Limitations
+
+The Vercel deployment is a frontend-only build intended to demonstrate the UX layer and analytical output format. Because the full RAG backend (n8n + PostgreSQL) requires a self-hosted Docker environment, the live demo operates on a curated mock dataset with pre-computed responses.
+
+| Parameter | Live Demo | Full Local Deployment |
+|---|---|---|
+| **Coverage** | New Jersey only | 1M+ rows across all U.S. states |
+| **Cities Supported** | Jersey City, Princeton, Newark | All cities in the dataset |
+| **ZIP Codes Mapped** | `07302`, `08540`, `07102` | Full dataset coverage |
+| **Data Source** | Mock static responses | Live PostgreSQL query + Gemini synthesis |
+| **AI Pipeline** | Simulated (hardcoded briefs) | Live RAG — n8n + Gemini 2.5 Flash |
+
+### Supported Demo Queries
+
+The following inputs are recognized by the live demo:
+
+| Input | Market Classification |
+|---|---|
+| `Jersey City` or `07302` | High-Growth Urban Hub |
+| `Princeton` or `08540` | Premium Academic Enclave |
+| `Newark` or `07102` | Emerging Urban Frontier |
+| `New Jersey` | State-Level Corridor Analysis |
+
+> The mock dataset was designed to be representative of real market archetypes — high-growth urban, premium stable, speculative emerging — rather than arbitrary. The data values (median prices, yield estimates) approximate actual market conditions as of the dataset snapshot.
+
+For full natural language querying against the 1M+ row dataset, follow the [Installation & Deployment](#9-installation--deployment) guide to run the complete RAG pipeline locally.
+
+---
+
+## 3. Solution Overview
+
 
 MarketSense AI is a self-contained RAG system in which:
 
@@ -58,7 +96,7 @@ The result is a system where **AI accelerates advisory, and data provides the gu
 
 ---
 
-## 3. System Architecture
+## 4. System Architecture
 
 The pipeline follows a six-stage flow. Each stage is a discrete, independently replaceable component — a deliberate design principle for enterprise extensibility.
 
@@ -102,7 +140,7 @@ The pipeline follows a six-stage flow. Each stage is a discrete, independently r
 
 ---
 
-## 4. Strategic Engineering Decisions
+## 5. Strategic Engineering Decisions
 
 ### 4.1 Relational Retrieval Efficiency — The Migration from Flat Files to a Source of Truth
 
@@ -146,7 +184,7 @@ The PostgreSQL backend also establishes a **verifiable source of truth**: every 
 
 ---
 
-## 5. Platform Capabilities
+## 6. Platform Capabilities
 
 **Natural Language Market Querying.** Investment analysts query market conditions in plain English. The orchestration layer resolves query intent into structured SQL — no SQL knowledge required from the end user.
 
@@ -158,7 +196,7 @@ The PostgreSQL backend also establishes a **verifiable source of truth**: every 
 
 ---
 
-## 6. Product Roadmap
+## 7. Product Roadmap
 
 The current PoC implements the core intelligence pipeline. The application navigation reflects three defined development phases, of which Phase 1 is production-ready.
 
@@ -191,7 +229,7 @@ The **Settings** module underpins the enterprise integration layer. Planned capa
 
 ---
 
-## 7. Technology Stack
+## 8. Technology Stack
 
 | Layer | Technology | Strategic Rationale |
 |---|---|---|
@@ -205,7 +243,7 @@ The **Settings** module underpins the enterprise integration layer. Planned capa
 
 ---
 
-## 8. Installation & Deployment
+## 9. Installation & Deployment
 
 ### Prerequisites
 
@@ -258,7 +296,7 @@ docker ps
 
 ### Step 3: Execute the ETL Pipeline
 
-Download the source dataset (see [Section 9](#9-data-source--governance-notice)) and place `realtor-data.csv` in `backend/data_prep/`. Then run:
+Download the source dataset (see [Section 10](#10-data-source--governance-notice)) and place `realtor-data.csv` in `backend/data_prep/`. Then run:
 
 ```bash
 cd backend/data_prep
@@ -323,7 +361,7 @@ Access the platform at [http://localhost:5173](http://localhost:5173).
 
 ---
 
-## 9. Data Source & Governance Notice
+## 10. Data Source & Governance Notice
 
 This PoC is built on the **[USA Real Estate Dataset](https://www.kaggle.com/datasets/ahmedshahriarsakib/usa-real-estate-dataset/data)** (approximately 170MB; 1M+ property records), sourced from Kaggle under its applicable license terms.
 
