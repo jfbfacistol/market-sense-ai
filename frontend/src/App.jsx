@@ -88,7 +88,6 @@ export default function MarketSenseAI() {
   const [zip, setZip] = useState("");
   const [inquiry, setInquiry] = useState("");
   const [stage, setStage] = useState("idle");
-  const [inputFocused, setInputFocused] = useState(false);
   const [aiResponse, setAiResponse] = useState("");
   const [marketMetrics, setMarketMetrics] = useState([]);
 
@@ -100,22 +99,54 @@ export default function MarketSenseAI() {
   };
 
   const handleAnalyze = async () => {
+    const query = zip.toLowerCase().trim();
+    
+    // --- ENVIRONMENT CONFIGURATION ---
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+    const n8nUrl = import.meta.env.VITE_N8N_URL;
+
     setStage("loading");
 
-    // Create a timeout controller (30 seconds)
+    // --- STRATEGIC DEMO LOGIC ---
+    if (isDemoMode) {
+      const demoData = {
+        "jersey city": {
+          brief: "## Market Analysis: Jersey City\n\n### Strategic Vibe\nJersey City is a **High-Growth Urban Hub**. It serves as a primary alternative to Manhattan, attracting significant institutional capital and young professionals.\n\n### Investment Outlook\n- **Opportunity:** High rental demand in the Waterfront and Journal Square districts.\n- **Risk:** Rapid development may lead to short-term inventory saturation.\n\n> Verdict: A 'Strong Buy' for portfolio diversification and capital appreciation.",
+          metrics: [{ category: "Avg Price", value: 785000 }, { category: "Growth Rate %", value: 12 }, { category: "Inventory Score", value: 65 }]
+        },
+        "princeton": {
+          brief: "## Market Analysis: Princeton\n\n### Strategic Vibe\nPrinceton is a **Premium Academic Enclave**. Characterized by extreme price stability and limited inventory, it serves as a defensive asset class.\n\n### Investment Outlook\n- **Opportunity:** High-end residential rentals for university faculty and researchers.\n- **Risk:** Strict zoning laws limit large-scale commercial scaling.\n\n> Verdict: A 'Stable Hold' for long-term capital preservation and generational wealth.",
+          metrics: [{ category: "Avg Price", value: 1250000 }, { category: "Stability Index", value: 98 }, { category: "Risk Rating", value: 5 }]
+        },
+        "newark": {
+          brief: "## Market Analysis: Newark\n\n### Strategic Vibe\nNewark represents an **Emerging Urban Frontier**. Proximity to major transport hubs and airport revitalization programs drive its high-yield potential.\n\n### Investment Outlook\n- **Opportunity:** Value-add multi-family residential projects.\n- **Risk:** Neighborhood-specific volatility requires granular due diligence.\n\n> Verdict: A 'Speculative Growth' play for investors with higher risk tolerance.",
+          metrics: [{ category: "Avg Price", value: 425000 }, { category: "Yield Potential %", value: 18 }, { category: "Market Vibe", value: 82 }]
+        }
+      };
+
+      if (demoData[query]) {
+        setTimeout(() => {
+          setAiResponse(demoData[query].brief);
+          setMarketMetrics(demoData[query].metrics);
+          setStage("results");
+        }, 1200); // Showcase skeleton loaders
+        return;
+      }
+    }
+
+    // --- REAL BACKEND CALL (DOCKER) ---
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const response = await fetch("http://localhost:5678/webhook-test/strategy-brief", {
+      const response = await fetch(n8nUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ zipCode: zip, question: inquiry }),
         signal: controller.signal
       });
 
-      clearTimeout(timeoutId)
-
+      clearTimeout(timeoutId);
       if (!response.ok) throw new Error("Failed to connect to AI engine.");
 
       const data = await response.json();
@@ -133,7 +164,6 @@ export default function MarketSenseAI() {
         setAiResponse(rawAiText || "Error parsing AI response.");
         setMarketMetrics([]);
       }
-
       setStage("results");
     } catch (error) {
       setAiResponse(`System Error: ${error.message}`);
@@ -195,7 +225,7 @@ export default function MarketSenseAI() {
                 value={zip}
                 onChange={e => setZip(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="City, State, or ZIP"
+                placeholder="Try 'Jersey City' or 'Princeton'"
                 style={{
                   width: "100%", padding: "1.1rem 1.25rem", borderRadius: "12px", border: "1.5px solid #e2e8f0",
                   fontSize: "1rem", outline: "none", backgroundColor: "#fff", transition: "all 0.2s"
@@ -219,7 +249,7 @@ export default function MarketSenseAI() {
             value={inquiry}
             onChange={e => setInquiry(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Focus your inquiry (e.g., 'Luxury investment potential' or 'Pricing trends')"
+            placeholder="Focus your inquiry (e.g., 'Luxury investment potential')"
             style={{
               width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1.5px solid #e2e8f0",
               fontSize: "0.9rem", outline: "none", backgroundColor: "#fff"
@@ -278,7 +308,7 @@ export default function MarketSenseAI() {
               </div>
               <div style={{ marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: "0.75rem", color: "#64748b", lineHeight: 1.5 }}>
                 Confidence Score: 94%<br />
-                Source: USA Real Estate Dataset
+                Source: USA Real Estate Dataset · Decoupled RAG Architecture
               </div>
             </div>
 

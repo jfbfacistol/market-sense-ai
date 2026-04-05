@@ -14,36 +14,9 @@
         0,
         0
       ],
-      "id": "7354edd2-3253-470f-ae29-61ce073dcb3b",
+      "id": "e56789a5-6e49-4490-b3ce-33df79c17f7c",
       "name": "Webhook",
       "webhookId": "51955049-79a0-429d-8952-937de61f6f73"
-    },
-    {
-      "parameters": {
-        "fileSelector": "/home/node/.n8n-files/realtor_data_cleaned.csv",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.readWriteFile",
-      "typeVersion": 1.1,
-      "position": [
-        208,
-        0
-      ],
-      "id": "8fc50764-74bb-4b52-bf32-ca3c2d8da0b2",
-      "name": "Read/Write Files from Disk"
-    },
-    {
-      "parameters": {
-        "jsCode": "const zipInput = ($node[\"Webhook\"].json[\"body\"][\"zipCode\"] || \"\").toString().trim().toLowerCase();\nconst csvData = $node[\"Read Binary Files\"].json;\n\nlet filteredData = [];\nconst MAX_RESULTS = 50; // We only need 50 rows for Gemini\n\n// EFFICIENT FILTERING: Use a loop and 'break' so we don't process 2 million rows if we don't have to\nfor (const row of csvData) {\n  const zip = (row.zip_code || \"\").toString().toLowerCase();\n  const city = (row.city || \"\").toString().toLowerCase();\n  const state = (row.state || \"\").toString().toLowerCase();\n\n  if (!zipInput || zip === zipInput || city === zipInput || state === zipInput) {\n    filteredData.push(row);\n  }\n\n  // Stop once we have enough data to send to Gemini\n  if (filteredData.length >= MAX_RESULTS) break;\n}\n\nreturn {\n  market_data: filteredData,\n  match_count: filteredData.length,\n  search_term: zipInput || \"United States (General)\"\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        416,
-        0
-      ],
-      "id": "484ba67c-4517-4231-a031-36dd473ed519",
-      "name": "Code in JavaScript"
     },
     {
       "parameters": {
@@ -56,7 +29,7 @@
         "messages": {
           "values": [
             {
-              "content": "=Answer this user question: {{ $node[\"Webhook\"].json[\"body\"][\"question\"] }}\n\nCRITICAL DATA NOTICE: \nThe market data provided below IS the actual row-level data from the dataset. \nDo NOT say you don't have access to the rows. \nLook at the `prev_sold_date` column in the provided data and find the most recent one.\n\nMarket Data: {{ $json.market_data }}\n\nCRITICAL INSTRUCTION:\nRespond with ONLY a raw JSON object. \nUse the \"brief\" field to answer the question directly. \nIf the question is about a date, find the largest (most recent) value in the `prev_sold_date` field."
+              "content": "=### ROLE\nYou are the Real Estate Intelligence Engine for MarketSense AI. Your goal is to provide institutional-grade strategy briefs based on raw property data.\n\n### INPUT DATA\nUser Question: {{ $node[\"Webhook\"].json[\"body\"][\"question\"] }}\nProperty Records (JSON): {{ $node[\"Aggregate\"].json[\"data\"] }}\n\n### TASK\n1. Analyze the provided property records for trends in pricing, square footage, and sales recency.\n2. Identify the \"Investment Vibe\" (e.g., Value-Add, Luxury Core, or Emerging Market).\n3. Extract specific metrics for the dashboard.\n\n### OUTPUT REQUIREMENTS\nRespond ONLY with a valid JSON object. Do not include markdown code blocks (no ```json). \n\n{\n  \"brief\": \"## Market Analysis: [City/State]\\n\\n### Investment Vibe\\n[1-2 sentences on the overall market sentiment].\\n\\n### Key Findings\\n- **Pricing:** [Insight on price per sqft or median price].\\n- **Inventory:** [Insight based on the number of rows provided].\\n- **Recent Activity:** [Mention the most recent 'prev_sold_date' found in the data].\\n\\n> Strategic Recommendation: [One sentence of high-level advice].\",\n  \"metrics\": [\n    {\"category\": \"Avg Listing Price\", \"value\": [Calculate Average of 'price' column]},\n    {\"category\": \"Recent Sales Found\", \"value\": [Count of rows with 'prev_sold_date']},\n    {\"category\": \"Median House Size\", \"value\": [Median of 'house_size']}\n  ]\n}"
             }
           ]
         },
@@ -66,17 +39,53 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        624,
+        592,
         0
       ],
-      "id": "61ef815f-c636-4efb-a353-a6247318bc00",
+      "id": "912f8453-704a-453b-8822-4fe12a6d6ae1",
       "name": "Message a model",
       "credentials": {
         "googlePalmApi": {
-          "id": "E6Ahk6YFUOZMtM6W",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "eQqHbnzqADtmsOy9",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM properties \nWHERE \n  (state ILIKE '{{ $node[\"Webhook\"].json[\"body\"][\"zipCode\"] }}' \n   OR city ILIKE '{{ $node[\"Webhook\"].json[\"body\"][\"zipCode\"] }}'\n   OR zip_code::text = '{{ $node[\"Webhook\"].json[\"body\"][\"zipCode\"] }}')\nLIMIT 50;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1b473128-b84a-4073-9ea9-f0b8edde580c",
+      "name": "Execute a SQL query",
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "5YZMdur8rmwN7Wiw",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "66700411-d3fc-44d0-a2b5-5fcb65c214b4",
+      "name": "Aggregate"
     }
   ],
   "pinData": {},
@@ -85,25 +94,25 @@
       "main": [
         [
           {
-            "node": "Read/Write Files from Disk",
+            "node": "Execute a SQL query",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Read/Write Files from Disk": {
+    "Execute a SQL query": {
       "main": [
         [
           {
-            "node": "Code in JavaScript",
+            "node": "Aggregate",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Aggregate": {
       "main": [
         [
           {
@@ -120,11 +129,11 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "16e413af-29ce-48ca-b7d2-3b34ea985df3",
+  "versionId": "dabdf265-e8c0-4f87-a28d-bcbb633d0e22",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "67560758f34965d0065e7a844f4edfc9ab3de31e36d4f0bfe35aa221ec536164"
+    "instanceId": "a928ea5c581d60be5bcb2bf3c5ddd8b62f5e1a87079bc58ce52adcbd61907397"
   },
-  "id": "NdZBes2asyObHUM3",
+  "id": "NzAHY7kjzREJ0RGU",
   "tags": []
 }
