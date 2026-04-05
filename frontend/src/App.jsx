@@ -121,6 +121,14 @@ export default function MarketSenseAI() {
         "newark": {
           brief: "## Market Analysis: Newark\n\n### Strategic Vibe\nNewark represents an **Emerging Urban Frontier**. Proximity to major transport hubs and airport revitalization programs drive its high-yield potential.\n\n### Investment Outlook\n- **Opportunity:** Value-add multi-family residential projects.\n- **Risk:** Neighborhood-specific volatility requires granular due diligence.\n\n> Verdict: A 'Speculative Growth' play for investors with higher risk tolerance.",
           metrics: [{ category: "Avg Price", value: 425000 }, { category: "Yield Potential %", value: 18 }, { category: "Market Vibe", value: 82 }]
+        },
+        "new jersey": {
+          brief: "## State Analysis: New Jersey\n\n### Strategic Vibe\nNew Jersey serves as a **Critical Northeast Economic Corridor**. It is a highly diverse market ranging from high-density transit hubs to stable suburban enclaves.\n\n### Investment Outlook\n- **Urban Growth:** Centered on the PATH-train corridor (Jersey City and Newark).\n- **Defensive Assets:** High-performing school districts in Princeton and Millburn.\n\n> Verdict: A top-tier market for institutional and private equity diversification.",
+          metrics: [
+            { category: "State Avg Price", value: 510000 }, 
+            { category: "Market Diversity", value: 92 },
+            { category: "Inventory Rating", value: 74 }
+          ]
         }
       };
 
