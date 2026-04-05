@@ -99,36 +99,42 @@ export default function MarketSenseAI() {
   };
 
   const handleAnalyze = async () => {
-    const query = zip.toLowerCase().trim();
+    let query = zip.toLowerCase().trim();
     
-    // --- ENVIRONMENT CONFIGURATION ---
+    // --- ZIP CODE NORMALIZATION ---
+    const zipMap = {
+      "07302": "jersey city",
+      "08540": "princeton",
+      "07102": "newark"
+    };
+
+    if (zipMap[query]) {
+      query = zipMap[query];
+    }
+
+    // --- ENVIRONMENT CONFIG ---
     const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
     const n8nUrl = import.meta.env.VITE_N8N_URL;
 
     setStage("loading");
 
-    // --- STRATEGIC DEMO LOGIC ---
     if (isDemoMode) {
       const demoData = {
         "jersey city": {
-          brief: "## Market Analysis: Jersey City\n\n### Strategic Vibe\nJersey City is a **High-Growth Urban Hub**. It serves as a primary alternative to Manhattan, attracting significant institutional capital and young professionals.\n\n### Investment Outlook\n- **Opportunity:** High rental demand in the Waterfront and Journal Square districts.\n- **Risk:** Rapid development may lead to short-term inventory saturation.\n\n> Verdict: A 'Strong Buy' for portfolio diversification and capital appreciation.",
-          metrics: [{ category: "Avg Price", value: 785000 }, { category: "Growth Rate %", value: 12 }, { category: "Inventory Score", value: 65 }]
+          brief: "## Market Analysis: Jersey City\n\n### Strategic Vibe\nJersey City (including **07302**) is a **High-Growth Urban Hub**. It serves as the primary institutional alternative to Manhattan.\n\n### Investment Outlook\n- **Opportunity:** High rental demand in the Waterfront district.\n- **Risk:** New luxury supply entering the market in 2027.\n\n> Verdict: A 'Strong Buy' for portfolio diversification.",
+          metrics: [{ category: "Avg Price", value: 785000 }, { category: "Growth Rate %", value: 12 }]
         },
         "princeton": {
-          brief: "## Market Analysis: Princeton\n\n### Strategic Vibe\nPrinceton is a **Premium Academic Enclave**. Characterized by extreme price stability and limited inventory, it serves as a defensive asset class.\n\n### Investment Outlook\n- **Opportunity:** High-end residential rentals for university faculty and researchers.\n- **Risk:** Strict zoning laws limit large-scale commercial scaling.\n\n> Verdict: A 'Stable Hold' for long-term capital preservation and generational wealth.",
-          metrics: [{ category: "Avg Price", value: 1250000 }, { category: "Stability Index", value: 98 }, { category: "Risk Rating", value: 5 }]
+          brief: "## Market Analysis: Princeton\n\n### Strategic Vibe\nPrinceton (including **08540**) is a **Premium Academic Enclave**. It offers extreme price stability and serves as a defensive asset class.\n\n### Investment Outlook\n- **Opportunity:** High-end residential rentals for University stakeholders.\n- **Risk:** Extremely low inventory levels.\n\n> Verdict: A 'Stable Hold' for long-term capital preservation.",
+          metrics: [{ category: "Avg Price", value: 1250000 }, { category: "Stability Index", value: 98 }]
         },
         "newark": {
-          brief: "## Market Analysis: Newark\n\n### Strategic Vibe\nNewark represents an **Emerging Urban Frontier**. Proximity to major transport hubs and airport revitalization programs drive its high-yield potential.\n\n### Investment Outlook\n- **Opportunity:** Value-add multi-family residential projects.\n- **Risk:** Neighborhood-specific volatility requires granular due diligence.\n\n> Verdict: A 'Speculative Growth' play for investors with higher risk tolerance.",
-          metrics: [{ category: "Avg Price", value: 425000 }, { category: "Yield Potential %", value: 18 }, { category: "Market Vibe", value: 82 }]
+          brief: "## Market Analysis: Newark\n\n### Strategic Vibe\nNewark (including **07102**) is an **Emerging Urban Frontier**. It is a high-yield candidate driven by transport infrastructure.\n\n### Investment Outlook\n- **Opportunity:** Value-add multi-family residential units.\n- **Risk:** Granular neighborhood volatility.\n\n> Verdict: A 'Speculative Growth' play for high-yield seekers.",
+          metrics: [{ category: "Avg Price", value: 425000 }, { category: "Yield Potential %", value: 18 }]
         },
         "new jersey": {
-          brief: "## State Analysis: New Jersey\n\n### Strategic Vibe\nNew Jersey serves as a **Critical Northeast Economic Corridor**. It is a highly diverse market ranging from high-density transit hubs to stable suburban enclaves.\n\n### Investment Outlook\n- **Urban Growth:** Centered on the PATH-train corridor (Jersey City and Newark).\n- **Defensive Assets:** High-performing school districts in Princeton and Millburn.\n\n> Verdict: A top-tier market for institutional and private equity diversification.",
-          metrics: [
-            { category: "State Avg Price", value: 510000 }, 
-            { category: "Market Diversity", value: 92 },
-            { category: "Inventory Rating", value: 74 }
-          ]
+          brief: "## State Analysis: New Jersey\n\n### Strategic Vibe\nNew Jersey is a **Critical Economic Corridor**. It offers a diverse mix of transit-oriented urban hubs and premium suburban markets.\n\n### Investment Outlook\n- **Urban Corridor:** High growth in the PATH-train accessible regions.\n- **Suburban Stability:** Strongest performance in high-tier school districts.\n\n> Verdict: A diversified market suitable for institutional deployment.",
+          metrics: [{ category: "State Avg Price", value: 510000 }, { category: "Market Diversity", value: 92 }]
         }
       };
 
@@ -137,12 +143,12 @@ export default function MarketSenseAI() {
           setAiResponse(demoData[query].brief);
           setMarketMetrics(demoData[query].metrics);
           setStage("results");
-        }, 1200); // Showcase skeleton loaders
+        }, 1200);
         return;
       }
     }
 
-    // --- REAL BACKEND CALL (DOCKER) ---
+    // --- REAL BACKEND CALL ---
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
@@ -205,14 +211,13 @@ export default function MarketSenseAI() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
           {["Market Data", "AI Agent", "Settings"].map(item => (
-            <span key={item} style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500, cursor: "pointer" }}>{item}</span>
+            <span key={item} style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500 }}>{item}</span>
           ))}
           <div style={{ padding: "0.4rem 0.8rem", backgroundColor: "#0f172a", borderRadius: "6px", color: "#fff", fontSize: "0.75rem", fontWeight: 600 }}>PRO</div>
         </div>
       </header>
 
       <main style={{ maxWidth: 1000, margin: "0 auto", padding: "5rem 2rem" }}>
-        
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <span style={{ fontSize: "0.75rem", color: "#e94560", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", display: "block", marginBottom: "1rem" }}>
             Real Estate Intelligence Engine
@@ -233,22 +238,14 @@ export default function MarketSenseAI() {
                 value={zip}
                 onChange={e => setZip(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Try 'Jersey City' or 'Princeton'"
+                placeholder="Try '08540' or 'New Jersey'"
                 style={{
                   width: "100%", padding: "1.1rem 1.25rem", borderRadius: "12px", border: "1.5px solid #e2e8f0",
                   fontSize: "1rem", outline: "none", backgroundColor: "#fff", transition: "all 0.2s"
                 }}
               />
             </div>
-            <button 
-              onClick={handleAnalyze} 
-              disabled={stage === "loading"} 
-              className="analyze-btn"
-              style={{
-                backgroundColor: "#e94560", color: "#fff", padding: "0 2rem", borderRadius: "12px",
-                fontWeight: 600, border: "none", cursor: stage === "loading" ? "not-allowed" : "pointer"
-              }}
-            >
+            <button onClick={handleAnalyze} disabled={stage === "loading"} className="analyze-btn" style={{ backgroundColor: "#e94560", color: "#fff", padding: "0 2rem", borderRadius: "12px", fontWeight: 600, border: "none", cursor: stage === "loading" ? "not-allowed" : "pointer" }}>
               {stage === "loading" ? "Processing..." : "Generate Brief"}
             </button>
           </div>
@@ -257,11 +254,8 @@ export default function MarketSenseAI() {
             value={inquiry}
             onChange={e => setInquiry(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Focus your inquiry (e.g., 'Luxury investment potential')"
-            style={{
-              width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1.5px solid #e2e8f0",
-              fontSize: "0.9rem", outline: "none", backgroundColor: "#fff"
-            }}
+            placeholder="Focus your inquiry (e.g., 'Rental yields')"
+            style={{ width: "100%", padding: "1rem 1.25rem", borderRadius: "12px", border: "1.5px solid #e2e8f0", fontSize: "0.9rem", outline: "none", backgroundColor: "#fff" }}
           />
         </div>
 
@@ -270,7 +264,6 @@ export default function MarketSenseAI() {
               <div style={{ backgroundColor: "#fff", borderRadius: "20px", padding: "3rem", border: "1px solid #f1f5f9" }}>
                 <SkeletonBlock style={{ height: 30, width: "60%", marginBottom: "2rem" }} />
                 <SkeletonBlock style={{ height: 15, width: "100%", marginBottom: "1rem" }} />
-                <SkeletonBlock style={{ height: 15, width: "90%", marginBottom: "1rem" }} />
                 <SkeletonBlock style={{ height: 15, width: "95%", marginBottom: "3rem" }} />
               </div>
               <div style={{ backgroundColor: "#fff", borderRadius: "20px", padding: "3rem", border: "1px solid #f1f5f9" }}>
@@ -282,7 +275,6 @@ export default function MarketSenseAI() {
 
         {stage === "results" && (
           <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: "2.5rem", alignItems: "start" }}>
-            
             <div className="result-panel" style={{ backgroundColor: "#fff", borderRadius: "24px", padding: "4rem", border: "1px solid #f1f5f9", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem" }}>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Strategy Brief</h3>
@@ -301,31 +293,22 @@ export default function MarketSenseAI() {
                       <span style={{ fontWeight: 700 }}>{formatValue(item.value)}</span>
                     </div>
                     <div style={{ backgroundColor: "rgba(255,255,255,0.1)", borderRadius: "100px", height: "6px", overflow: "hidden" }}>
-                      <div 
-                        className="bar-fill" 
-                        style={{ 
-                          "--bar-width": `${Math.min(item.value > 100 ? (item.value / 10000) : item.value, 100)}%`, 
-                          backgroundColor: i === 0 ? "#e94560" : "#38bdf8", height: "100%" 
-                        }} 
-                      />
+                      <div className="bar-fill" style={{ "--bar-width": `${Math.min(item.value > 100 ? (item.value / 10000) : item.value, 100)}%`, backgroundColor: i === 0 ? "#e94560" : "#38bdf8", height: "100%" }} />
                     </div>
                   </div>
-                )) : (
-                  <p style={{ color: "#64748b", fontStyle: "italic", fontSize: "0.8rem" }}>No dynamic metrics provided by AI.</p>
-                )}
+                )) : <p style={{ color: "#64748b", fontStyle: "italic", fontSize: "0.8rem" }}>No dynamic metrics provided.</p>}
               </div>
               <div style={{ marginTop: "3rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: "0.75rem", color: "#64748b", lineHeight: 1.5 }}>
                 Confidence Score: 94%<br />
-                Source: USA Real Estate Dataset · Decoupled RAG Architecture
+                Source: Real Estate Intelligence Dataset · Decoupled RAG Architecture
               </div>
             </div>
-
           </div>
         )}
       </main>
 
       <footer style={{ textAlign: "center", padding: "4rem 0", color: "#94a3b8", fontSize: "0.7rem", letterSpacing: "0.1em" }}>
-        PROTOTYPE V2.5 · BUILT BY JAE · POWERED BY GEMINI 2.5 FLASH
+        STRATEGY PROTOTYPE · BUILT BY JAE · POWERED BY GEMINI 3 FLASH
       </footer>
     </div>
   );
